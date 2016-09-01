@@ -3,7 +3,7 @@
 $fn=50;
 nozzle=0.8;
 wall=nozzle*2;
-clearance=0.1;
+clearance=0.2;
 //
 h=50;
 x=82.5; //
@@ -12,6 +12,14 @@ panel_thickness = 3.0;
 powersupply_x=55.7;
 powersupply_y=105.6;
 powersupply_y_offset=28;
+
+mains_switch_width = 21.2;
+mains_switch_height = 30.0;
+
+mains_inlet_width = 27.0;
+mains_inlet_height = 19.0;
+mains_inlet_mount_hole_pitch = 40.0;
+mains_inlet_rotation_angle = 45.0;
 
 module border_support() {
 difference(){
@@ -41,7 +49,18 @@ module rearpanel(){
 	h=h-wall*2-clearance*2;
 	difference(){
 	cube([x,h,wall]);
-	translate([15,h/2-25/2,-0.5]) cube([28,25,wall+1]);
+        // The mains inlet
+        
+    rotated_height = mains_inlet_height * cos(mains_inlet_rotation_angle) + mains_inlet_width * sin(mains_inlet_rotation_angle);
+	translate([7.5, (h + rotated_height) / 2 - mains_inlet_height * cos(mains_inlet_rotation_angle), -0.5]) rotate([0, 0, -mains_inlet_rotation_angle]) {
+        union() {
+            cube([mains_inlet_width, mains_inlet_height, wall+1]);
+            translate([-(mains_inlet_mount_hole_pitch - mains_inlet_width)/2, mains_inlet_height/2, -0.5]) cylinder(d=3.1, h =wall+1);
+            translate([(mains_inlet_mount_hole_pitch + mains_inlet_width)/2, mains_inlet_height/2, -0.5]) cylinder(d=3.1, h =wall+1);
+            }
+        }
+        // The mains switch
+    translate([x - 10 - mains_switch_width, h/2 - mains_switch_height/2, -0.5]) cube([mains_switch_width, mains_switch_height, wall+1]);    
 	}
 }
 
@@ -140,12 +159,12 @@ difference(){
 		}
 	}
 	//front
-	translate([wall*2,-wall,wall*2]) cube([x-wall*4,wall*5,h/2]);
-	translate([wall,wall,wall]) cube([x-wall*2,wall+clearance*2,h/2+wall]);
+    translate([wall*2,-wall,wall*2]) cube([x-wall*4,wall*4+panel_thickness,h/2]);
+	translate([wall,wall,wall]) cube([x-wall*2,panel_thickness+clearance*2,h/2+wall]);
 	//rear
-	translate([wall*2,y-wall*2,wall*2]) cube([x-wall*4,wall*3,h/2]);
-	translate([wall+8,y-wall*4,wall*2]) cube([x-wall*2-16,wall*5,h/2]);
-	translate([wall,y-wall*2-clearance*2,wall]) cube([x-wall*2,wall+clearance*2,h/2+wall]);
+    translate([wall*2,y-wall*2,wall*2]) cube([x-wall*4,wall*2+panel_thickness,h/2]);
+	translate([wall+8,y-wall*3-panel_thickness,wall*2]) cube([x-wall*2-16,wall*4+panel_thickness,h/2]);
+	translate([wall,y-wall-panel_thickness-clearance*2,wall]) cube([x-wall*2,panel_thickness+clearance*2,h/2+wall]);
 //top screw
 	translate([wall+8/2,y-wall*3-8/2,1]) cylinder(d=2.7, h=h);
 	translate([x-wall-8/2,y-wall*3-8/2,1]) cylinder(d=2.7, h=h);
@@ -162,6 +181,6 @@ translate([x-wall,y/4*2+wall*3,0]) rotate([0,0,180]) border_support();
 translate([x-wall,y/4*3+wall*3,0]) rotate([0,0,180]) border_support();
 }
 //rotate([0,180,0]) translate([-100-x+wall*2,0,0]) frontpanel();
-//translate([100,60,0]) rearpanel();
+translate([100,60,0]) rearpanel();
 //translate([-100,0,0]) top();
-bottom();
+//bottom();
